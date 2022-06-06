@@ -1,4 +1,3 @@
-import { EntityHelper } from '../../utils/entity-helper';
 import {
   CreateDateColumn,
   DeleteDateColumn,
@@ -7,16 +6,16 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { ProductCategoryTranslate } from './product-category-translate.entity';
+import { EntityHelper } from '../../utils/entity-helper';
+import { ProductTagTranslate } from './product-tag-translate.entity';
 
 @Entity()
-export class ProductCategory extends EntityHelper {
+export class ProductTag extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => ProductCategoryTranslate, (translate) => translate.category)
-  translations?: ProductCategoryTranslate[];
+  @OneToMany(() => ProductTagTranslate, (translate) => translate.tag)
+  translations?: ProductTagTranslate[];
 
   @CreateDateColumn()
   createdAt: Date;

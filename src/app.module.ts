@@ -28,6 +28,8 @@ import { ForgotModule } from './forgot/forgot.module';
 import { MailModule } from './mail/mail.module';
 import { HomeModule } from './home/home.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
+import { ProductBrandsModule } from './product-brands/product-brands.module';
+import { ProductTagsModule } from './product-tags/product-tags.module';
 
 @Module({
   imports: [
@@ -79,6 +81,8 @@ import { ProductCategoriesModule } from './product-categories/product-categories
     MailModule,
     HomeModule,
     ProductCategoriesModule,
+    ProductBrandsModule,
+    ProductTagsModule,
   ],
 })
 export class AppModule {}

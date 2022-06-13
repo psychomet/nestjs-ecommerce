@@ -4,6 +4,7 @@ import {
 } from 'class-validator';
 import { getRepository } from 'typeorm';
 import { ValidationArguments } from 'class-validator/types/validation/ValidationArguments';
+import { CreateFacetTranslationDto } from '../../facets/dto/create-facet-translation.dto';
 
 @ValidatorConstraint({ name: 'IsExist', async: true })
 export class IsExist implements ValidatorConstraintInterface {
@@ -11,9 +12,12 @@ export class IsExist implements ValidatorConstraintInterface {
     const repository = validationArguments.constraints[0];
     const pathToProperty = validationArguments.constraints[1];
     const entity: unknown = await getRepository(repository).findOne({
-      [pathToProperty ? pathToProperty : validationArguments.property]:
-        pathToProperty ? value?.[pathToProperty] : value,
+      [pathToProperty ? pathToProperty : validationArguments.property]: value,
     });
+    // const entity: unknown = await getRepository(repository).findOne({
+    //   [pathToProperty ? pathToProperty : validationArguments.property]:
+    //     pathToProperty ? value?.[pathToProperty] : value,
+    // });
 
     return Boolean(entity);
   }

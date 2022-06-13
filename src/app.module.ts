@@ -27,9 +27,14 @@ import { MailConfigService } from './mail/mail-config.service';
 import { ForgotModule } from './forgot/forgot.module';
 import { MailModule } from './mail/mail.module';
 import { HomeModule } from './home/home.module';
-import { ProductCategoriesModule } from './product-categories/product-categories.module';
-import { ProductBrandsModule } from './product-brands/product-brands.module';
-import { ProductTagsModule } from './product-tags/product-tags.module';
+import { FacetsModule } from './facets/facets.module';
+import { FacetValuesModule } from './facet-values/facet-values.module';
+import { ProductsModule } from './products/products.module';
+import { ProductOptionsModule } from './product-options/product-options.module';
+import { ProductOptionGroupsModule } from './product-option-groups/product-option-groups.module';
+import { TaxRatesModule } from './tax-rates/tax-rates.module';
+import { ProductVariantsModule } from './product-variants/product-variants.module';
+import { TaxCategoriesModule } from './tax-categories/tax-categories.module';
 
 @Module({
   imports: [
@@ -80,9 +85,14 @@ import { ProductTagsModule } from './product-tags/product-tags.module';
     ForgotModule,
     MailModule,
     HomeModule,
-    ProductCategoriesModule,
-    ProductBrandsModule,
-    ProductTagsModule,
+    FacetsModule,
+    FacetValuesModule,
+    ProductsModule,
+    ProductOptionsModule,
+    ProductOptionGroupsModule,
+    TaxRatesModule,
+    ProductVariantsModule,
+    TaxCategoriesModule,
   ],
 })
 export class AppModule {}

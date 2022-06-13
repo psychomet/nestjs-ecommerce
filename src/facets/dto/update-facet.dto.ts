@@ -10,7 +10,6 @@ export class UpdateFacetDto {
   @ApiProperty({ type: UpdateFacetTranslationDto, isArray: true })
   @IsArray()
   @ArrayMinSize(1)
-  @Type(() => FacetTranslation)
   translations: FacetTranslation[];
 
   @ApiProperty({ type: UpdateFacetValueDto, isArray: true })

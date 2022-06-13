@@ -55,7 +55,7 @@ export class FacetsController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateFacetDto: UpdateFacetDto) {
+  update(@Param('id') id: string, @Body() updateFacetDto: any) {
     console.log('updateFacetDto');
     return this.facetsService.update(+id, updateFacetDto);
   }

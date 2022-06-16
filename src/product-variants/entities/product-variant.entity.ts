@@ -17,6 +17,7 @@ import { Product } from '../../products/entities/product.entity';
 import { ProductOption } from '../../product-options/entities/product-option.entity';
 import { FacetValue } from '../../facet-values/entities/facet-value.entity';
 import { ProductVariantPrice } from './product-variant-price.entity';
+import { ProductVariantTranslation } from './product-variant-translation.entity';
 
 @Entity()
 export class ProductVariant extends EntityHelper {
@@ -39,22 +40,31 @@ export class ProductVariant extends EntityHelper {
   @Column({ default: 0 })
   outOfStockThreshold: number;
 
-  @ManyToOne((type) => Product, (product) => product.variants)
+  @ManyToOne(() => Product, (product) => product.variants)
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @ManyToMany((type) => ProductOption)
+  @ManyToMany(() => ProductOption)
   @JoinTable()
   options: ProductOption[];
 
-  @ManyToMany((type) => FacetValue)
+  @ManyToMany(() => FacetValue)
   @JoinTable()
   facetValues: FacetValue[];
 
-  @OneToMany((type) => ProductVariantPrice, (price) => price.variant, {
+  @OneToMany(() => ProductVariantPrice, (price) => price.variant, {
     eager: true,
   })
   productVariantPrices: ProductVariantPrice[];
+
+  @OneToMany(
+    () => ProductVariantTranslation,
+    (translation) => translation.productVariant,
+    {
+      eager: true,
+    },
+  )
+  translations: ProductVariantTranslation[];
 
   @CreateDateColumn()
   createdAt: Date;

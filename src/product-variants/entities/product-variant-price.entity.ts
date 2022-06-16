@@ -5,6 +5,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,6 +13,9 @@ import { EntityHelper } from '../../utils/entity-helper';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProductVariant } from './product-variant.entity';
 import { TaxCategory } from '../../tax-categories/entities/tax-category.entity';
+import { Language } from '../../languages/entities/language.entity';
+import { CurrencyTranslation } from '../../currencies/entities/currency-translation.entity';
+import { Currency } from '../../currencies/entities/currency.entity';
 
 @Entity()
 export class ProductVariantPrice extends EntityHelper {
@@ -21,7 +25,7 @@ export class ProductVariantPrice extends EntityHelper {
 
   @Column() price: number;
 
-  @ManyToOne((type) => TaxCategory)
+  @ManyToOne(() => TaxCategory)
   @JoinColumn({ name: 'tax_category_id' })
   taxCategory: TaxCategory;
 
@@ -31,6 +35,15 @@ export class ProductVariantPrice extends EntityHelper {
   )
   @JoinColumn({ name: 'product_variant_id' })
   variant: ProductVariant;
+
+  // @OneToMany(() => Currency, (currency) => currency.productVariantPrice, {
+  //   eager: true,
+  // })
+  // currencies?: Currency[];
+
+  @ManyToOne(() => Currency)
+  @JoinColumn({ name: 'currency_id' })
+  currency: Currency;
 
   @CreateDateColumn()
   createdAt: Date;

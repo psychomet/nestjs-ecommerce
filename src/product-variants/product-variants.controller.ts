@@ -10,8 +10,13 @@ import {
 import { ProductVariantsService } from './product-variants.service';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('product-variants')
+@ApiTags('ProductVariants')
+@Controller({
+  path: 'product-variants',
+  version: '1',
+})
 export class ProductVariantsController {
   constructor(
     private readonly productVariantsService: ProductVariantsService,
@@ -29,7 +34,7 @@ export class ProductVariantsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productVariantsService.findOne(+id);
+    return this.productVariantsService.findOne({ id });
   }
 
   @Patch(':id')

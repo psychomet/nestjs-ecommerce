@@ -35,6 +35,7 @@ import { ProductOptionGroupsModule } from './product-option-groups/product-optio
 import { TaxRatesModule } from './tax-rates/tax-rates.module';
 import { ProductVariantsModule } from './product-variants/product-variants.module';
 import { TaxCategoriesModule } from './tax-categories/tax-categories.module';
+import { CurrenciesModule } from './currencies/currencies.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { TaxCategoriesModule } from './tax-categories/tax-categories.module';
     TaxRatesModule,
     ProductVariantsModule,
     TaxCategoriesModule,
+    CurrenciesModule,
   ],
 })
 export class AppModule {}

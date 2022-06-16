@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
@@ -18,6 +19,9 @@ import { ProductVariant } from '../../product-variants/entities/product-variant.
 export class Product extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ default: true })
+  enabled: boolean;
 
   @ManyToMany((type) => FacetValue)
   @JoinTable()

@@ -25,6 +25,7 @@ export class CurrencyTranslation extends EntityHelper {
   @ManyToOne(() => Language, {
     eager: true,
   })
+  @JoinColumn({ name: 'lang_id' })
   lang?: Language;
 
   @ManyToOne(() => Currency, {

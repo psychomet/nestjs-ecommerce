@@ -4,12 +4,17 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Language } from '../languages/entities/language.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { FacetValue } from '../facet-values/entities/facet-value.entity';
 import { Product } from './entities/product.entity';
 import { ProductTranslation } from './entities/product-translation.entity';
-import { Facet } from '../facets/entities/facet.entity';
 import { EntityCondition } from '../utils/types/entity-condition.type';
+import {
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
+import { ProductVariant } from '../product-variants/entities/product-variant.entity';
 
 @Injectable()
 export class ProductsService {
@@ -23,38 +28,40 @@ export class ProductsService {
     private productTranslateRepository: Repository<ProductTranslation>,
     @InjectRepository(FacetValue)
     private facetValueRepository: Repository<FacetValue>,
+    @InjectRepository(ProductVariant)
+    private productVariantRepository: Repository<ProductVariant>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
     try {
-      createProductDto.translations = await Promise.all(
-        createProductDto.translations.map(async (item): Promise<any> => {
-          const languageFound = await this.languageRepository.findOne(
-            item['langId'],
-          );
-          return { ...item, lang: languageFound };
+      const savedProduct = await queryRunner.manager.save(
+        this.productRepository.create({
+          ...createProductDto,
+          facetValues: await Promise.all(
+            createProductDto.facetValueIds.map(
+              async (item): Promise<FacetValue> =>
+                await this.facetValueRepository.findOne(item),
+            ),
+          ),
         }),
       );
-      if (
-        createProductDto.facetValueIds &&
-        createProductDto.facetValueIds.length !== 0
-      ) {
-        createProductDto['facetValues'] = await Promise.all(
-          createProductDto.facetValueIds.map(async (item): Promise<any> => {
-            return await this.facetValueRepository.findOne(item);
-          }),
-        );
-      }
-      createProductDto.translations =
-        await this.productTranslateRepository.save(
-          this.productTranslateRepository.create(createProductDto.translations),
-        );
-      const createdProduct = await this.productRepository.save(
-        this.productRepository.create(createProductDto),
+      await queryRunner.manager.save(
+        this.productTranslateRepository.create(
+          createProductDto.translations.map((translate) => ({
+            ...translate,
+            product: savedProduct,
+          })),
+        ),
       );
-      return await this.findOne({ id: createdProduct.id });
+      await queryRunner.commitTransaction();
+      return await this.findOne({ id: savedProduct.id });
     } catch (e) {
-      throw new HttpException(e.detail, HttpStatus.CONFLICT);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -62,10 +69,28 @@ export class ProductsService {
     return `This action returns all products`;
   }
 
+  async paginate(
+    options: IPaginationOptions,
+    isGroup,
+  ): Promise<Pagination<Product | ProductVariant>> {
+    console.log('isGroup', typeof isGroup);
+    if (isGroup) {
+      return await paginate<Product>(this.productRepository, options);
+    } else {
+      return await paginate<ProductVariant>(
+        this.productVariantRepository,
+        options,
+        {
+          relations: ['product'],
+        },
+      );
+    }
+  }
+
   async findOne(fields: EntityCondition<Product>) {
     const productFound = await this.productRepository.findOne({
       where: fields,
-      relations: ['translations', 'facetValues', 'optionGroups', 'variants'],
+      relations: ['facetValues', 'optionGroups', 'variants'],
     });
     if (productFound) {
       return productFound;

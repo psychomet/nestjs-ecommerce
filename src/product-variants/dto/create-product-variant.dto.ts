@@ -43,19 +43,6 @@ export class CreateProductVariantDto {
   @IsNotEmpty()
   stockOnHand: number;
 
-  @ApiProperty({ example: 0, type: Number })
-  @IsNumber()
-  @IsNotEmpty()
-  price: number;
-
-  @ApiProperty({ example: 1 })
-  @Validate(IsExist, ['Currency', 'id'], {
-    message: 'currencyNotExists',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  currency: number;
-
   @ApiProperty({ type: CreateProductVariantTranslationDto, isArray: true })
   @IsArray()
   @ArrayMinSize(1)

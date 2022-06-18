@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Validate } from 'class-validator';
 import { IsExist } from '../../utils/validators/is-exists.validator';
 
-export class AddOptionGroupToProduct {
+export class AddOptionGroupToProductDto {
   @ApiProperty({ example: 1 })
   @Validate(IsExist, ['ProductOptionGroup', 'id'], {
     message: 'productOptionGroupNotExists',

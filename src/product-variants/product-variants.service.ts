@@ -4,7 +4,7 @@ import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Language } from '../languages/entities/language.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { ProductVariant } from './entities/product-variant.entity';
 import { ProductVariantTranslation } from './entities/product-variant-translation.entity';
 import { ProductVariantPrice } from './entities/product-variant-price.entity';
@@ -31,44 +31,54 @@ export class ProductVariantsService {
   ) {}
 
   async create(createProductVariantDto: CreateProductVariantDto) {
-    createProductVariantDto['product'] = await this.productRepository.findOne(
-      createProductVariantDto.productId,
-    );
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
 
-    if (
-      createProductVariantDto.optionIds &&
-      createProductVariantDto.optionIds.length !== 0
-    ) {
-      createProductVariantDto['options'] = await Promise.all(
-        createProductVariantDto.optionIds.map(
-          async (item): Promise<any> =>
-            await this.productOptionRepository.findOne(item),
+    try {
+      createProductVariantDto['product'] = await this.productRepository.findOne(
+        createProductVariantDto.productId,
+      );
+
+      if (
+        createProductVariantDto.optionIds &&
+        createProductVariantDto.optionIds.length !== 0
+      ) {
+        createProductVariantDto['options'] = await Promise.all(
+          createProductVariantDto.optionIds.map(
+            async (item): Promise<any> =>
+              await this.productOptionRepository.findOne(item),
+          ),
+        );
+      }
+
+      const savedProductVariant = await queryRunner.manager.save(
+        this.productVariantRepository.create(createProductVariantDto),
+      );
+
+      await queryRunner.manager.save(
+        this.productVariantTranslationRepository.create(
+          createProductVariantDto.translations.map((translation) => ({
+            ...translation,
+            productVariant: savedProductVariant,
+          })),
         ),
       );
+      await queryRunner.manager.save(
+        this.productVariantPriceRepository.create(
+          createProductVariantDto.productVariantPrices.map((price) => ({
+            ...price,
+            variant: savedProductVariant,
+          })),
+        ),
+      );
+      await queryRunner.commitTransaction();
+      return await this.findOne({ id: savedProductVariant.id });
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
     }
-
-    const savedProductVariant = await this.productVariantRepository.save(
-      this.productVariantRepository.create(createProductVariantDto),
-    );
-
-    await this.productVariantTranslationRepository.save(
-      this.productVariantTranslationRepository.create(
-        createProductVariantDto.translations.map((translation) => ({
-          ...translation,
-          productVariant: savedProductVariant,
-        })),
-      ),
-    );
-    this.productVariantPriceRepository.save(
-      this.productVariantPriceRepository.create(
-        createProductVariantDto.productVariantPrices.map((price) => ({
-          ...price,
-          variant: savedProductVariant,
-        })),
-      ),
-    );
-
-    return await this.findOne({ id: savedProductVariant.id });
   }
 
   findAll() {

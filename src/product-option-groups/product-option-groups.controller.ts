@@ -12,7 +12,7 @@ import { ProductOptionGroupsService } from './product-option-groups.service';
 import { CreateProductOptionGroupDto } from './dto/create-product-option-group.dto';
 import { UpdateProductOptionGroupDto } from './dto/update-product-option-group.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AddOptionGroupToProduct } from './dto/add-option-group-to-product.dto';
+import { AddOptionGroupToProductDto } from './dto/add-option-group-to-product.dto';
 
 @ApiTags('ProductOptionGroups')
 @Controller({
@@ -29,9 +29,9 @@ export class ProductOptionGroupsController {
     return this.productOptionGroupsService.create(createProductOptionGroupDto);
   }
 
-  @Put()
+  @Put('add-option-group-to-product')
   addOptionGroupToProduct(
-    @Body() addOptionGroupToProduct: AddOptionGroupToProduct,
+    @Body() addOptionGroupToProduct: AddOptionGroupToProductDto,
   ) {
     return this.productOptionGroupsService.addOptionGroupToProduct(
       addOptionGroupToProduct,

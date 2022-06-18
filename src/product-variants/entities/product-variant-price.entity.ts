@@ -25,7 +25,9 @@ export class ProductVariantPrice extends EntityHelper {
 
   @Column() price: number;
 
-  @ManyToOne(() => TaxCategory)
+  @ManyToOne(() => TaxCategory, {
+    eager: true,
+  })
   @JoinColumn({ name: 'tax_category_id' })
   taxCategory: TaxCategory;
 
@@ -41,7 +43,9 @@ export class ProductVariantPrice extends EntityHelper {
   // })
   // currencies?: Currency[];
 
-  @ManyToOne(() => Currency)
+  @ManyToOne(() => Currency, {
+    eager: true,
+  })
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
 

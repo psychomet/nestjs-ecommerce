@@ -3,7 +3,7 @@ import { CreateFacetDto } from './dto/create-facet.dto';
 import { UpdateFacetDto } from './dto/update-facet.dto';
 import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { Facet } from './entities/facet.entity';
 import { FacetTranslation } from './entities/facet-translation.entity';
 import { EntityCondition } from '../utils/types/entity-condition.type';
@@ -36,24 +36,27 @@ export class FacetsService {
   ) {}
 
   async create(createFacetDto: CreateFacetDto) {
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
     try {
-      createFacetDto.translations = await Promise.all(
-        createFacetDto.translations.map(async (item): Promise<any> => {
-          const languageFound = await this.languageRepository.findOne(
-            item['langId'],
-          );
-          return { ...item, lang: languageFound };
-        }),
+      const createdFacet = await queryRunner.manager.save(
+        this.facetRepository.create(createFacetDto),
       );
-      createFacetDto.translations = await this.facetTranslateRepository.save(
-        this.facetTranslateRepository.create(createFacetDto.translations),
+      await queryRunner.manager.save(
+        this.facetTranslateRepository.create(
+          createFacetDto.translations.map((translate) => ({
+            ...translate,
+            facet: createdFacet,
+          })),
+        ),
       );
-      const createdFacet = await this.facetRepository.save(
-        this.facetRepository.create(createFacetDto as Facet),
-      );
+      await queryRunner.commitTransaction();
       return await this.findOne({ id: createdFacet.id });
     } catch (e) {
+      await queryRunner.rollbackTransaction();
       throw new HttpException(e.detail, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
     }
   }
 

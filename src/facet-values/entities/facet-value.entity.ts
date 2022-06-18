@@ -19,7 +19,9 @@ export class FacetValue extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => FacetValueTranslation, (translate) => translate.facetValue)
+  @OneToMany(() => FacetValueTranslation, (translate) => translate.facetValue, {
+    eager: true,
+  })
   translations?: FacetValueTranslation[];
 
   @ManyToOne(() => Facet, (group) => group.values, { onDelete: 'CASCADE' })

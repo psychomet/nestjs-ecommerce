@@ -6,6 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -28,6 +34,23 @@ export class ProductsController {
   @Get()
   findAll() {
     return this.productsService.findAll();
+  }
+
+  @Get('paginate')
+  @HttpCode(HttpStatus.OK)
+  async paginate(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+    @Query('isGroup', ParseBoolPipe) isGroup = true,
+  ) {
+    limit = limit > 100 ? 100 : limit;
+    return this.productsService.paginate(
+      {
+        page,
+        limit,
+      },
+      isGroup,
+    );
   }
 
   @Get(':id')

@@ -15,5 +15,5 @@ export class CreateFacetValueTranslationDto {
   @Validate(IsExist, ['Language', 'id'], {
     message: 'langNotExists',
   })
-  langId: number;
+  lang: number;
 }

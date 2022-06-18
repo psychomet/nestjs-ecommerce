@@ -6,6 +6,7 @@ import { Product } from './entities/product.entity';
 import { ProductTranslation } from './entities/product-translation.entity';
 import { Language } from '../languages/entities/language.entity';
 import { FacetValue } from '../facet-values/entities/facet-value.entity';
+import { ProductVariant } from '../product-variants/entities/product-variant.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FacetValue } from '../facet-values/entities/facet-value.entity';
       ProductTranslation,
       Language,
       FacetValue,
+      ProductVariant,
     ]),
   ],
   controllers: [ProductsController],

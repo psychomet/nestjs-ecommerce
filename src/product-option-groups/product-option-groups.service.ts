@@ -4,14 +4,14 @@ import { UpdateProductOptionGroupDto } from './dto/update-product-option-group.d
 import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Language } from '../languages/entities/language.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { ProductOptionGroup } from './entities/product-option-group.entity';
 import { ProductOptionGroupTranslation } from './entities/product-option-group-translation.entity';
 import { ProductOption } from '../product-options/entities/product-option.entity';
 import { ProductOptionTranslation } from '../product-options/entities/product-option-translation.entity';
 import { EntityCondition } from '../utils/types/entity-condition.type';
 import { Product } from '../products/entities/product.entity';
-import { AddOptionGroupToProduct } from './dto/add-option-group-to-product.dto';
+import { AddOptionGroupToProductDto } from './dto/add-option-group-to-product.dto';
 
 @Injectable()
 export class ProductOptionGroupsService {
@@ -32,64 +32,84 @@ export class ProductOptionGroupsService {
   ) {}
 
   async create(createProductOptionGroupDto: CreateProductOptionGroupDto) {
-    const savedProductOptionGroup =
-      await this.productOptionGroupRepository.save(
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+    try {
+      const savedProductOptionGroup = await queryRunner.manager.save(
         this.productOptionGroupRepository.create(createProductOptionGroupDto),
       );
-
-    await this.productOptionGroupTranslationRepository.save(
-      this.productOptionGroupTranslationRepository.create(
-        createProductOptionGroupDto.translations.map((translation) => ({
-          ...translation,
-          productOptionGroup: savedProductOptionGroup,
-        })),
-      ),
-    );
-
-    if (
-      createProductOptionGroupDto.options &&
-      createProductOptionGroupDto.options.length !== 0
-    ) {
-      for (let option of createProductOptionGroupDto.options) {
-        const savedProductOption = await this.productOptionRepository.save(
-          this.productOptionRepository.create({
-            ...option,
-            group: savedProductOptionGroup,
-          }),
-        );
-        await this.productOptionTranslationRepository.save(
-          this.productOptionTranslationRepository.create(
-            option.translations.map((translation) => ({
-              ...translation,
-              productOption: savedProductOption,
-            })),
-          ),
-        );
+      await queryRunner.manager.save(
+        this.productOptionGroupTranslationRepository.create(
+          createProductOptionGroupDto.translations.map((translation) => ({
+            ...translation,
+            productOptionGroup: savedProductOptionGroup,
+          })),
+        ),
+      );
+      if (
+        createProductOptionGroupDto.options &&
+        createProductOptionGroupDto.options.length !== 0
+      ) {
+        for (let option of createProductOptionGroupDto.options) {
+          const savedProductOption = await queryRunner.manager.save(
+            this.productOptionRepository.create({
+              ...option,
+              group: savedProductOptionGroup,
+            }),
+          );
+          await queryRunner.manager.save(
+            this.productOptionTranslationRepository.create(
+              option.translations.map((translation) => ({
+                ...translation,
+                productOption: savedProductOption,
+              })),
+            ),
+          );
+        }
       }
+      await queryRunner.commitTransaction();
+      return await this.findOne({ id: savedProductOptionGroup.id });
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
     }
-
-    return await this.findOne({ id: savedProductOptionGroup.id });
   }
 
   async addOptionGroupToProduct(
-    createProductOptionGroupDto: AddOptionGroupToProduct,
+    createProductOptionGroupDto: AddOptionGroupToProductDto,
   ) {
-    const productFound = await this.productRepository.findOne(
-      createProductOptionGroupDto.productId,
-    );
-    const optionGroupFound = await this.productOptionGroupRepository.findOne(
-      createProductOptionGroupDto.optionGroupId,
-    );
-    productFound.optionGroups.push(optionGroupFound);
-    await this.productRepository.save(
-      this.productRepository.create(productFound),
-    );
-    await this.productOptionGroupRepository.save(
-      this.productOptionGroupRepository.create({
-        ...optionGroupFound,
-        product: productFound,
-      }),
-    );
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+    try {
+      const productFound = await this.productRepository.findOne(
+        createProductOptionGroupDto.productId,
+        {
+          relations: ['optionGroups'],
+        },
+      );
+      const optionGroupFound = await this.productOptionGroupRepository.findOne(
+        createProductOptionGroupDto.optionGroupId,
+      );
+      productFound.optionGroups.push(optionGroupFound);
+      await queryRunner.manager.save(
+        this.productRepository.create(productFound),
+      );
+      await queryRunner.manager.save(
+        this.productOptionGroupRepository.create({
+          ...optionGroupFound,
+          product: productFound,
+        }),
+      );
+      await queryRunner.commitTransaction();
+      return await this.findOne({ id: optionGroupFound.id });
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   findAll() {
@@ -112,7 +132,16 @@ export class ProductOptionGroupsService {
     }
   }
 
-  update(id: number, updateProductOptionGroupDto: UpdateProductOptionGroupDto) {
+  async update(
+    id: number,
+    updateProductOptionGroupDto: UpdateProductOptionGroupDto,
+  ) {
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+    try {
+    } catch (e) {
+    } finally {
+    }
     return `This action updates a #${id} productOptionGroup`;
   }
 

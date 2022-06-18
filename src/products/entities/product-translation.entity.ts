@@ -34,12 +34,16 @@ export class ProductTranslation extends EntityHelper {
     this.slug = slugify(this.name);
   }
 
-  @ManyToOne((type) => Product, (base) => base.translations)
+  @ManyToOne((type) => Product, (base) => base.translations, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
   @ManyToOne(() => Language, {
     eager: true,
   })
+  @JoinColumn({ name: 'lang_id' })
   lang?: Language;
 }

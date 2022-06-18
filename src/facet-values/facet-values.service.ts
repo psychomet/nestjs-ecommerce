@@ -3,7 +3,7 @@ import { CreateFacetValueDto } from './dto/create-facet-value.dto';
 import { UpdateFacetValueDto } from './dto/update-facet-value.dto';
 import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { FacetValue } from './entities/facet-value.entity';
 import { FacetValueTranslation } from './entities/facet-value-translation.entity';
 import { EntityCondition } from '../utils/types/entity-condition.type';
@@ -22,30 +22,40 @@ export class FacetValuesService {
   ) {}
 
   async create(createFacetValueDto: CreateFacetValueDto) {
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+
     try {
       const facetFound = await this.facetRepository.findOne({
         id: createFacetValueDto.facetId,
       });
 
-      createFacetValueDto.translations =
-        await this.facetValueTranslateRepository.save(
-          this.facetValueTranslateRepository.create(
-            createFacetValueDto.translations,
-          ),
-        );
-      return await this.facetValueRepository.save(
+      const savedFacetValue = await queryRunner.manager.save(
         this.facetValueRepository.create({
           ...createFacetValueDto,
           facet: facetFound,
         }),
       );
+
+      await queryRunner.manager.save(
+        this.facetValueTranslateRepository.create(
+          createFacetValueDto.translations.map((translate) => ({
+            ...translate,
+            facetValue: savedFacetValue,
+          })),
+        ),
+      );
+      await queryRunner.commitTransaction();
     } catch (e) {
+      await queryRunner.rollbackTransaction();
       throw new HttpException(e.detail, HttpStatus.BAD_REQUEST);
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  findAll() {
-    return this.facetValueRepository.find();
+  async findAll() {
+    return await this.facetValueRepository.find({ relations: ['facet'] });
   }
 
   async findOne(fields: EntityCondition<FacetValue>) {

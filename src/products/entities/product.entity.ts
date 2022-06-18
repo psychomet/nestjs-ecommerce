@@ -23,23 +23,19 @@ export class Product extends EntityHelper {
   @Column({ default: true })
   enabled: boolean;
 
-  @ManyToMany((type) => FacetValue)
+  @ManyToMany(() => FacetValue)
   @JoinTable()
   facetValues: FacetValue[];
 
-  @OneToMany(
-    (type) => ProductTranslation,
-    (translation) => translation.product,
-    {
-      eager: true,
-    },
-  )
+  @OneToMany(() => ProductTranslation, (translation) => translation.product, {
+    eager: true,
+  })
   translations: ProductTranslation[];
 
-  @OneToMany((type) => ProductOptionGroup, (optionGroup) => optionGroup.product)
+  @OneToMany(() => ProductOptionGroup, (optionGroup) => optionGroup.product)
   optionGroups: ProductOptionGroup[];
 
-  @OneToMany((type) => ProductVariant, (variant) => variant.product)
+  @OneToMany(() => ProductVariant, (variant) => variant.product)
   variants: ProductVariant[];
 
   @CreateDateColumn()

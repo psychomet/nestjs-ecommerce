@@ -11,6 +11,9 @@ import { CreateProductTranslationDto } from './create-product-translation.dto';
 import { ProductTranslation } from '../entities/product-translation.entity';
 
 export class CreateProductDto {
+  @IsOptional()
+  id: number;
+
   @ApiProperty({ example: false })
   @IsBoolean()
   @IsOptional()

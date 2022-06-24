@@ -3,8 +3,11 @@ import { IsNotEmpty, IsOptional, IsString, Validate } from 'class-validator';
 import { IsExist } from '../../utils/validators/is-exists.validator';
 
 export class CreateProductOptionGroupTranslationDto {
+  @IsOptional()
+  id: number;
+
   @ApiProperty({ example: 'code', type: String, required: true })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   code: string;
 

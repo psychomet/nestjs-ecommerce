@@ -1,10 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Validate } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Validate } from 'class-validator';
 import { IsExist } from '../../utils/validators/is-exists.validator';
 
 export class CreateProductOptionTranslationDto {
+  @IsOptional()
+  id: number;
+
   @ApiProperty({ example: 'code', type: String, required: true })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   code: string;
 

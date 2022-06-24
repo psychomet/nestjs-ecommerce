@@ -12,6 +12,9 @@ import { CreateProductOptionDto } from '../../product-options/dto/create-product
 import { ProductOption } from '../../product-options/entities/product-option.entity';
 
 export class CreateProductOptionGroupDto {
+  @IsOptional()
+  id: number;
+
   @ApiProperty({ type: CreateProductOptionGroupTranslationDto, isArray: true })
   @IsArray()
   @ArrayMinSize(1)

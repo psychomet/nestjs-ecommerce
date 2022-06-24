@@ -90,7 +90,7 @@ export class ProductsService {
   async findOne(fields: EntityCondition<Product>) {
     const productFound = await this.productRepository.findOne({
       where: fields,
-      relations: ['facetValues', 'optionGroups', 'variants'],
+      relations: ['facetValues', 'optionGroups','optionGroups.options', 'variants', 'variants.facetValues'],
     });
     if (productFound) {
       return productFound;
@@ -102,8 +102,41 @@ export class ProductsService {
     }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    console.log('updateProductDto', updateProductDto);
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+    try {
+      const productFound = await this.productRepository.findOne({ id });
+      const updatedProduct = await queryRunner.manager.save(
+        this.productRepository.create({
+          ...updateProductDto,
+          id: productFound.id,
+          facetValues: await Promise.all(
+            updateProductDto.facetValueIds.map(
+              async (item): Promise<FacetValue> =>
+                await this.facetValueRepository.findOne(item),
+            ),
+          ),
+        }),
+      );
+      await queryRunner.manager.save(
+        this.productTranslateRepository.create(
+          updateProductDto.translations.map((translate) => ({
+            ...translate,
+            product: updatedProduct,
+          })),
+        ),
+      );
+      await queryRunner.commitTransaction();
+      return await this.findOne({ id: updatedProduct.id });
+      // productFound = { ...productFound };
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   remove(id: number) {

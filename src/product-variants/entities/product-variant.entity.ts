@@ -18,6 +18,7 @@ import { ProductOption } from '../../product-options/entities/product-option.ent
 import { FacetValue } from '../../facet-values/entities/facet-value.entity';
 import { ProductVariantPrice } from './product-variant-price.entity';
 import { ProductVariantTranslation } from './product-variant-translation.entity';
+import { Collection } from '../../collections/entities/collection.entity';
 
 @Entity()
 export class ProductVariant extends EntityHelper {
@@ -74,4 +75,7 @@ export class ProductVariant extends EntityHelper {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @ManyToMany((type) => Collection, (collection) => collection.productVariants)
+  collections: Collection[];
 }

@@ -36,6 +36,7 @@ import { TaxRatesModule } from './tax-rates/tax-rates.module';
 import { ProductVariantsModule } from './product-variants/product-variants.module';
 import { TaxCategoriesModule } from './tax-categories/tax-categories.module';
 import { CurrenciesModule } from './currencies/currencies.module';
+import { CollectionsModule } from './collections/collections.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { CurrenciesModule } from './currencies/currencies.module';
     ProductVariantsModule,
     TaxCategoriesModule,
     CurrenciesModule,
+    CollectionsModule,
   ],
 })
 export class AppModule {}

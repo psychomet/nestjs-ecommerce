@@ -5,11 +5,13 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
+  PrimaryGeneratedColumn,
   TreeChildren,
   TreeParent,
 } from 'typeorm';
 import { CollectionTranslation } from './collection-translation.entity';
 import { ProductVariant } from '../../product-variants/entities/product-variant.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 type ConfigArg = {
   name: string;
@@ -23,6 +25,10 @@ type ConfigurableOperation = {
 
 @Entity()
 export class Collection extends EntityHelper {
+  @ApiProperty({ example: 1 })
+  @PrimaryGeneratedColumn()
+  id: number;
+
   @Column({ default: false })
   isRoot: boolean;
 
